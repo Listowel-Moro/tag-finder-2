@@ -19,9 +19,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Build JAR file with Maven
-        run: mvn clean package
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -29,6 +26,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       #
+      - name: Build JAR file with Maven
+        run: mvn clean package
+
       - name: Login to Amazon ECR Public
         run: |
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/z2w7p2s7
