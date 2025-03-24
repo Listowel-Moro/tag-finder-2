@@ -65,8 +65,3 @@ jobs:
           
           # Upload the zip file to S3
           aws s3 cp deployment-package.zip s3://${{ secrets.S3_BUCKET }}/deployment-package.zip
-
-#      # Step 10: Trigger AWS CodePipeline to start deployment process
-#      - name: Start AWS CodePipeline Deployment
-#        run: |
-#          aws codepipeline start-pipeline-execution --name ${{ secrets.CODEPIPELINE_NAME }}
