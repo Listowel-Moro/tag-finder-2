@@ -1,0 +1,29 @@
+{
+  "family": "tag-finder-task",
+  "executionRoleArn": "arn:aws:iam::522814710448:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::522814710448:role/ECSS3role",
+  "containerDefinitions": [
+    {
+      "name": "tag-finder-container",
+      "image": "public.ecr.aws/z2w7p2s7/labs:latest",
+      "memory": 4096,
+      "cpu": 2048,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080
+        }
+      ],
+      "environment": [
+        {
+          "name": "DEPLOYMENT_VERSION",
+          "value": "123456789"
+        }
+      ]
+    }
+  ],
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "memory": "4096",
+  "cpu": "2048"
+}

@@ -1,0 +1,72 @@
+name: Build and Push Docker Image to Amazon ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build JAR file with Maven
+        run: mvn clean package
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      #
+      - name: Login to Amazon ECR Public
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/z2w7p2s7
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -t labs .
+          docker tag labs:latest public.ecr.aws/z2w7p2s7/labs:latest
+
+      - name: Push Docker image to Amazon ECR
+        run: |
+          docker push public.ecr.aws/z2w7p2s7/labs:latest
+          
+      # Step 8: Update taskdef.json with a new version (forces ECS to update task definition)
+      - name: Update Task Definition
+        run: |
+          sed -i 's|"imageUri": "public.ecr.aws/z2w7p2s7/labs:latest"|"imageUri": "public.ecr.aws/z2w7p2s7/labs:latest"|' deploy/taskdef.json
+          sed -i 's|"value": "123456789"|"value": "'$(date +%s)'"|' deploy/taskdef.json
+
+      # Step 9: Upload Task Definition & AppSpec to S3
+      - name: Package and Upload Task Definition & AppSpec to S3
+        run: |
+          # Create a directory for the files
+          mkdir -p deployment-package
+          
+          # Copy files to the directory
+          cp deploy/taskdef.json deployment-package/
+          cp deploy/appspec.yaml deployment-package/
+          
+          # Zip the files
+          cd deployment-package
+          zip -r ../deployment-package.zip .
+          cd ..
+          
+          # Upload the zip file to S3
+          aws s3 cp deployment-package.zip s3://${{ secrets.S3_BUCKET }}/deployment-package.zip
+
+#      # Step 10: Trigger AWS CodePipeline to start deployment process
+#      - name: Start AWS CodePipeline Deployment
+#        run: |
+#          aws codepipeline start-pipeline-execution --name ${{ secrets.CODEPIPELINE_NAME }}
