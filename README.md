@@ -34,3 +34,4 @@ A **CI/CD pipeline** using **GitHub Actions** automates the build and deployment
 3. **ECS Deployment Pipeline**:
     - The new image is picked up by **AWS CodeDeploy**
     - Performs **Blue/Green Deployment** to ECS
+   
