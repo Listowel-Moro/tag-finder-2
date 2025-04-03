@@ -56,14 +56,43 @@
             background-color: #FF5A00;
             background-opacity: 0.8;
         }
-        .upload-section {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
         .fade-in {
             animation: fadeIn 1s ease-in-out;
+        }
+        .tag-description {
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 5px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .pagination .page-link {
+            background-color: #FF5A00;
+            border: none;
+            color: white;
+        }
+        .pagination .page-link:hover {
+            background-color: #e04e00;
+        }
+        .pagination .active .page-link {
+            background-color: #FF5A00;
+            border-color: #FF5A00;
+        }
+        .pagination .page-link {
+            background-color: #FF5A00;
+            border: none;
+            color: white;
+        }
+        .pagination .page-link:hover {
+            background-color: #e04e00;
+        }
+        .pagination .active .page-link {
+            background-color: white;
+            color: #FF5A00;
+            border: 1px solid #FF5A00;
+            font-weight: bold;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -75,13 +104,31 @@
 <div class="container fade-in">
     <h1 class="mb-4 text-4xl font-bold">Amalitech Tag Finder</h1>
 
-    <!-- Upload Form -->
-    <div class="upload-section mb-4">
-        <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
-            <input type="file" accept="image/*" name="image" class="form-control mb-2" required alt="">
-            <input type="text" name="description" placeholder="Write tag description here" class="form-control mb-2" required>
-            <button type="submit" class="btn amali-btn">Upload Tag Image</button>
-        </form>
+    <!-- Upload Button -->
+    <button type="button" class="btn amali-btn mb-4" data-bs-toggle="modal" data-bs-target="#uploadModal">Add Tag</button>
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">Upload Tag Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Select Image</label>
+                            <input type="file" id="image" name="image" class="form-control" accept="image/*" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" id="description" name="description" class="form-control" placeholder="Write tag description here" required>
+                        </div>
+                        <button type="submit" class="btn amali-btn w-100">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Display Uploaded Images -->
@@ -89,9 +136,8 @@
         <div class="col-md-3 mb-4 fade-in" th:each="tag : ${tags}">
             <div class="card">
                 <img th:src="@{${tag.imageUrl}}" class="card-img-top" alt="Tag image" />
-
                 <div class="card-body">
-                    <p th:text="${tag.description}"></p>
+                    <p class="tag-description" th:text="${tag.description}"></p>
                     <form th:action="@{/delete-image}" method="post">
                         <input type="hidden" name="tagId" th:value="${tag.id}">
                         <button type="submit" class="btn btn-danger">Delete</button>
@@ -101,9 +147,27 @@
         </div>
     </div>
 
-    <div class="mb-20">
-        <a th:if="${nextToken}" th:href="@{/(token=${nextToken})}" class="amali-btn px-6 py-3 text-white text-lg rounded-none shadow-md hover:opacity-85 transition duration-300 ease-in-out">Load Next Page →</a>
+<!--    <div class="mb-4">-->
+<!--        <a th:if="${nextToken}" th:href="@{/(token=${nextToken})}" class="amali-btn px-6 py-3 text-white text-lg rounded-none shadow-md hover:opacity-85 transition duration-300 ease-in-out">Load Next Page →</a>-->
+<!--    </div>-->
+
+    <div class="pagination mt-4 mb-6">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:if="${currentPage > 0}">
+                    <a class="page-link" th:href="@{/(page=${currentPage - 1}, size=2)}">Previous</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/(page=${i}, size=2)}" th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:if="${currentPage + 1 < totalPages}">
+                    <a class="page-link" th:href="@{/(page=${currentPage + 1}, size=2)}">Next</a>
+                </li>
+            </ul>
+        </nav>
     </div>
+
 </div>
 </body>
 </html>

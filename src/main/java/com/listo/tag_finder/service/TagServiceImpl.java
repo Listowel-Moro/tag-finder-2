@@ -2,6 +2,8 @@ package com.listo.tag_finder.service;
 
 import com.listo.tag_finder.model.Tag;
 import com.listo.tag_finder.repository.TagRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,8 +22,8 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<Tag> findAll() {
-        return tagRepository.findAll();
+    public Page<Tag> findAll(int page, int size) {
+        return tagRepository.findAll(PageRequest.of(page, size));
     }
 
     @Override
@@ -37,5 +39,10 @@ public class TagServiceImpl implements TagService {
     @Override
     public void deleteById(Long id) {
         tagRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteAll() {
+        tagRepository.deleteAll();
     }
 }

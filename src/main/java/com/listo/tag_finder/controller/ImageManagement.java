@@ -4,6 +4,7 @@ import com.listo.tag_finder.model.Tag;
 import com.listo.tag_finder.service.ParameterStoreService;
 import com.listo.tag_finder.service.S3Service;
 import com.listo.tag_finder.service.TagService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,10 +27,14 @@ public class ImageManagement {
     }
 
     @GetMapping("/")
-    public String getImages(@RequestParam(value = "token", required = false) String token, Model model) {
-        List<Tag> tags = tagService.findAll();
-
-        model.addAttribute("tags", tags);
+    public String getTags(@RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "2") int size,
+                          Model model) {
+//        tagService.deleteAll();
+        Page<Tag> tagPage = tagService.findAll(page, size);
+        model.addAttribute("tags", tagPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", tagPage.getTotalPages());
         return "index";
     }
 
